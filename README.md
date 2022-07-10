@@ -13,7 +13,7 @@ This project was built to automate the process of submitting the documents of an
 # Project status
 - Create route to fetch all document types. Currently the documents are created per user once they are logged in.
 - Create a CMS to handle document and user creation, user document updates, viewing and reporting.
-- Users can only login to the application if an existing User API is integrated
+- Users can only login in the application if an existing User API is integrated.
 - Setup CI/CD with Azure DevOps
 
 
