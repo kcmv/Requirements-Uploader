@@ -18,7 +18,6 @@ pr:
   - dev
   
 variables:
-  webAppName: $(webName)
   prodEnvironmentName: "api_prod"
   devEnvironmentName: "api_dev"
   vmImageName: "ubuntu-latest"
