@@ -60,20 +60,18 @@ export class CmsUsersController {
   async userLogin(@Body() userLoginDto: UserLoginDto): Promise<any> {
     const { email, password } = userLoginDto;
     try {
-      const response = await onPremiseLogin({ email, password });
+      const response: any = await onPremiseLogin({ email, password });
 
-      if (response.result.status === "error") {
+      if (response.status === 401) {
         throw new UnauthorizedException(
-          `${response.result.title} ${response.result.message}`
+          `${response.title} ${response.message}`
         );
       } else {
-        const { token } = response.result.data;
+        const { token } = response.profile.data;
         return this.cmsUsersService.login(token);
       }
     } catch (error: any) {
-      if (error.response) {
-        throw new UnauthorizedException(error.response.message);
-      }
+        throw new Error(error);
     }
   }
 

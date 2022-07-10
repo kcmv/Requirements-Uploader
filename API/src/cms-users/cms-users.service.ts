@@ -14,14 +14,14 @@ export class CmsUsersService {
     @InjectRepository(CMSUserRepository)
     @InjectRepository(UserDocumentRepository)
     private cmsuserRepository: CMSUserRepository,
-    private jwtService: JwtService,
+    private jwtService: JwtService
   ) {}
   create(createCmsUserDto: CreateCmsUserDto): Promise<CmsUser> {
     return this.cmsuserRepository.createUser(createCmsUserDto);
   }
 
   findAll(skip: string, take: string) {
-    return this.cmsuserRepository.getAll(skip, take)
+    return this.cmsuserRepository.getAll(skip, take);
   }
 
   findOne(email: string): Promise<CmsUser> {
@@ -29,50 +29,31 @@ export class CmsUsersService {
   }
 
   getOneByUuid(id: string) {
-    return this.cmsuserRepository.getOneByUuid(id)
+    return this.cmsuserRepository.getOneByUuid(id);
   }
 
   async login(session_code: string): Promise<any> {
     const profile = await getProfile(session_code);
+
     const user = await this.cmsuserRepository.Login(
-      profile.result.data.employee_no,
-      profile.result.data.email
+      profile.data.employee_no,
+      profile.data.email
     );
 
     const payload = { user };
     const accessToken = await this.jwtService.sign(payload);
 
-    const {
-      email,
-      employee_no,
-      first_name,
-      last_name,
-      mobile,
-      department,
-      gender,
-      photo,
-      status,
-    } = profile.result.data;
-
     return {
+      user_id: user,
       accessToken,
       profile: {
-        email,
-        employee_no,
-        first_name,
-        last_name,
-        mobile,
-        department,
-        gender,
-        photo,
-        status,
+        ...profile.data,
       },
-      user_id: user,
     };
   }
 
   update(id: string, updateCmsUserDto: UpdateCmsUserDto) {
-    return this.cmsuserRepository.updateUser(id,updateCmsUserDto)
+    return this.cmsuserRepository.updateUser(id, updateCmsUserDto);
   }
 
   async remove(id: string) {
