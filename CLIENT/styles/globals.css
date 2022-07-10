@@ -1,0 +1,44 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#simple-tabpanel-0, #simple-tabpanel-1 {
+  background-color: #ffffff;
+}
+
+.MuiTableCell-head {
+  font-weight: bold !important;
+}
+
+thead.MuiTableHead-root:hover {
+  background-color: #ffffff;
+}
+/*  */
+[role=row]:hover {
+  background-color: rgb(124 124 124 / 50%);
+}
+
+/* #ChromelessStatusBar.Options-Small14 {
+  pointer-events: none;
+} */
+#ChromelessStatusBar.RightDock {
+  pointer-events: none;
+  display:none;
+}
+
+#ChromelessStatusBar.Options-Small14 {
+  display: none
+}

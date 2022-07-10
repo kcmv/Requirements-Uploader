@@ -1,0 +1,211 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  branches:
+    include:
+      - master
+      - staging
+      - uat
+      - dev
+
+pr:
+  - master
+  - staging
+  - uat
+  - dev
+
+# setting variables
+variables:
+  prodEnvironmentName: client_prod
+  devEnvironmentName: client_dev
+  vmImageName: "ubuntu-latest"
+  nodeVersion: "16.x"
+
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
+    branchName: "dev"
+    DeployTo: "DeployToDev"
+    API_URL: $(API_DEV)
+    API_COE_URL: $(API_COE_STAGING)
+    NEXT_AUTH_URL: $(NEXT_AUTH_URL_DEV)
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/uat') }}:
+    branchName: "uat"
+    DeployTo: "DeployToUAT"
+    API_URL: $(API_UAT)
+    API_COE_URL: $(API_COE_STAGING)
+    NEXT_AUTH_URL: $(NEXT_AUTH_URL_UAT)
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/staging') }}:
+    branchName: "staging"
+    DeployTo: "DeployToStaging"
+    API_URL: $(API_STAGING)
+    NEXT_AUTH_URL: $(NEXT_AUTH_URL_STAGING)
+    API_COE_URL: $(API_COE_STAGING)
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    branchName: "master"
+    DeployTo: "DeployToProduction"
+    API_URL: $(API)
+    API_COE_URL: $(API_COE)
+    NEXT_AUTH_URL: $(NEXT_AUTH_URL_PROD)
+
+stages:
+  - stage: Test
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Run Test
+    jobs:
+      - job: BuildJobForPullRequest
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: "Install Node.js"
+
+          - task: PowerShell@2
+            inputs:
+              targetType: "inline"
+              script: |
+                echo '##vso[task.setvariable variable=API]$(API_URL)'
+                echo '##vso[task.setvariable variable=COE_API]$(API_COE_URL)'
+                echo '##vso[task.setvariable variable=AUTH_SECRET]$(AUTHSECRET)'
+                echo '##vso[task.setvariable variable=AUTHORIZATION]$(COE_AUTH)'
+                echo '##vso[task.setvariable variable=AZURE_STORAGE_ACCOUNT_NAME]$(AZURE_STORAGE_ACCOUNT_NAME)'
+                echo '##vso[task.setvariable variable=AZURESTORAGE_CONTAINER_NAME]$(AZURESTORAGE_CONTAINER_NAME)'
+                echo '##vso[task.setvariable variable=AZURE_STORAGE_ACCOUNT_ACCESS_KEY]$(AZURE_STORAGE_ACCOUNT_ACCESS_KEY)'
+                echo '##vso[task.setvariable variable=AZURESTORAGE_STRING]$(AZURESTORAGE_STRING)'
+                echo '##vso[task.setvariable variable=AZURESTORAGE_ORIGIN]$(AZURESTORAGE_ORIGIN)'
+                echo '##vso[task.setvariable variable=NEXTAUTH_URL]$(NEXT_AUTH_URL)'
+            displayName: Set Env for testing
+
+          # Run tests if there are any
+          # - script: |
+          #     yarn citest
+          #   displayName: "Run test"
+          
+          # - task: PublishTestResults@2
+          #   displayName: "Publish Test Results junit.xml"
+          #   condition: succeededOrFailed()
+          #   inputs:
+          #     mergeTestResults: true
+          #     failTaskOnFailedTests: true
+          #     testResultsFiles: junit.xml
+
+          # - task: PublishCodeCoverageResults@1
+          #   displayName: "Publish code coverage from $(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml"
+          #   inputs:
+          #     codeCoverageTool: Cobertura
+          #     summaryFileLocation: "$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml"
+          #     reportDirectory: "$(System.DefaultWorkingDirectory)/coverage"
+
+          - task: Cache@2
+            displayName: "Cache .next/cache"
+            inputs:
+              key: next | $(Agent.OS) | yarn.lock
+              path: "$(System.DefaultWorkingDirectory)/.next/cache"
+
+          - script: |
+              yarn install
+              yarn build
+            displayName: "Run install and build"      
+
+  - stage: Build
+    condition: eq(variables['Build.Reason'], 'IndividualCI')
+    displayName: Build stage
+    jobs:
+      - job: EnvAndTest
+        pool:
+          vmIMage: $(vmImageName)
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: "Install Node.js"
+
+          - task: Cache@2
+            displayName: "Cache .next/cache"
+            inputs:
+              key: next | $(Agent.OS) | yarn.lock
+              path: "$(System.DefaultWorkingDirectory)/.next/cache"
+
+          - script: |
+              yarn install
+              yarn build
+            displayName: "Run install and build"
+
+          - script: |
+              mkdir dist
+              cp -a public dist
+              cp -a .next dist
+              cp -a package.json dist
+              cp -a server.js dist
+              cp -a node_modules dist
+              cp -a next.config.js dist
+            displayName: "Create dist folder"
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: "$(System.DefaultWorkingDirectory)/dist"
+              includeRootFolder: false
+              archiveType: "zip"
+              archiveFile: "$(Build.ArtifactStagingDirectory)/$(branchName).zip"
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "drop"
+              publishLocation: "Container"
+
+  - stage: DeployToDevUAT
+    dependsOn: Build
+    condition: and(ne(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'IndividualCI'))
+    jobs:
+      - deployment: Deploy
+        displayName: $(DeployTo)
+        environment: $(devEnvironmentName)
+        pool:
+          vmIMage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureRmWebAppDeployment@4
+                  displayName: 'Azure App Service Deploy $(branchName)'
+                  inputs:
+                    ConnectionType: "AzureRM"
+                    azureSubscription: $(azureSubscription)
+                    appType: "webAppLinux"
+                    WebAppName: $(webAppName)
+                    deployToSlotOrASE: true
+                    SlotName: $(branchName)
+                    ResourceGroupName: $(RgName)
+                    packageForLinux: "$(Pipeline.Workspace)/drop/$(branchName).zip"
+                    RuntimeStack: "NODE|16-lts"
+                    StartupCommand: "yarn start"
+
+  - stage: DeployToProd
+    dependsOn: Build
+    condition: and(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'IndividualCI'))
+    jobs:
+      - deployment: Deploy
+        displayName: "Deploy to $(branchName)"
+        environment: $(prodEnvironmentName)
+        pool:
+          vmIMage: $(vmImageName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureRmWebAppDeployment@4
+                  displayName: "Azure App Service Deploy $(branchName)"
+                  inputs:
+                    ConnectionType: "AzureRM"
+                    azureSubscription: $(azureSubscription)
+                    appType: "webAppLinux"
+                    WebAppName: $(webAppName)
+                    ResourceGroupName: $(RgName)
+                    packageForLinux: "$(Pipeline.Workspace)/drop/$(branchName).zip"
+                    RuntimeStack: "NODE|16-lts"
+                    StartupCommand: "yarn start"

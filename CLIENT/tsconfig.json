@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "jsxImportSource": "@emotion/react",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": ["components/*"],
+      "@/common/*": ["components/common/*"],
+      "@/pages/*": ["components/pages/*"]
+    },
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "components/index.ts",
+    "helpers/api/index.js",
+    "services/user.service.ts",
+    "pages/api/users/index.js",
+    "helpers/api/jwt-middleware.js",
+    "pages/error.js"
+  ],
+  "exclude": ["node_modules"]
+}

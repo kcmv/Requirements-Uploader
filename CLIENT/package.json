@@ -1,0 +1,50 @@
+{
+  "name": "client",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build:staging": "NODE_ENV=staging next build",
+    "build": "next build",
+    "start": "node_modules/next/dist/bin/next start -p $PORT",
+    "start:staging": "NODE_ENV=test node_modules/next/dist/bin/next start -p $PORT",
+    "lint": "next lint",
+    "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.10.0",
+    "@emotion/cache": "latest",
+    "@emotion/react": "latest",
+    "@emotion/server": "latest",
+    "@emotion/styled": "latest",
+    "@mui/icons-material": "latest",
+    "@mui/material": "latest",
+    "@types/multer": "^1.4.7",
+    "@types/react-table": "^7.7.12",
+    "axios": "^0.21.1",
+    "dotenv": "^16.0.1",
+    "express-jwt": "^7.7.2",
+    "form-data": "^4.0.0",
+    "formik": "^2.2.9",
+    "moment": "^2.29.3",
+    "multer": "^1.4.5-lts.1",
+    "next": "latest",
+    "next-auth": "^4.3.4",
+    "next-connect": "^0.12.2",
+    "nprogress": "^0.2.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-dropzone": "^14.2.1",
+    "react-query": "^3.15.2",
+    "react-table": "^7.8.0",
+    "uuid": "^8.3.2",
+    "yup": "^0.32.11"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "typescript": "latest"
+  }
+}
