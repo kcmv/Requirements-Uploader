@@ -39,7 +39,7 @@ export class CmsUsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard())
   @GetAllUsers()
-  findAll(@Param("skip") skip: string, @Param("take") take: string) {
+  findAll(@Param("skip") skip: string, @Param("take") take: string):Promise<[CmsUser[], number]> {
     return this.cmsUsersService.findAll(skip,take);
   }
 
@@ -48,7 +48,7 @@ export class CmsUsersController {
   @UseGuards(AuthGuard())
   @UsePipes(ValidationPipe)
   @GetUserByEmail()
-  findOne(@Param("email") email: string) {
+  findOne(@Param("email") email: string): Promise<CmsUser> {
     return this.cmsUsersService.findOne(email);
   }
 
@@ -80,7 +80,7 @@ export class CmsUsersController {
   @UseGuards(AuthGuard())
   @UsePipes(ValidationPipe)
   @UpdateUser()
-  update(@Param("id", ParseUUIDPipe) id: string, @Body() updateCmsUserDto: UpdateCmsUserDto) {
+  update(@Param("id", ParseUUIDPipe) id: string, @Body() updateCmsUserDto: UpdateCmsUserDto): Promise<CmsUser> {
     return this.cmsUsersService.update(id, updateCmsUserDto);
   }
 
@@ -89,7 +89,7 @@ export class CmsUsersController {
   @UseGuards(AuthGuard())
   @UsePipes(ValidationPipe)
   @DeleteUserById()
-  remove(@Param("id") id: string) {
+  remove(@Param("id") id: string): Promise<void> {
     return this.cmsUsersService.remove(id);
   }
 }

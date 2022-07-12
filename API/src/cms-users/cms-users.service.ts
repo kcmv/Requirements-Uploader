@@ -20,7 +20,7 @@ export class CmsUsersService {
     return this.cmsuserRepository.createUser(createCmsUserDto);
   }
 
-  findAll(skip: string, take: string) {
+  findAll(skip: string, take: string): Promise<[CmsUser[], number]> {
     return this.cmsuserRepository.getAll(skip, take);
   }
 
@@ -56,7 +56,7 @@ export class CmsUsersService {
     return this.cmsuserRepository.updateUser(id, updateCmsUserDto);
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     return this.cmsuserRepository.deleteEMP(id);
   }
 }

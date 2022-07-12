@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { DeleteResult } from "typeorm";
 import { DocumentsRepository } from "./documents.repository";
 import { CreateDocumentDto } from "./dto/create-document.dto";
 import { UpdateDocumentDto } from "./dto/update-document.dto";
@@ -11,7 +12,7 @@ export class DocumentsService {
     @InjectRepository(DocumentsRepository)
     private docsRepository: DocumentsRepository
   ) {}
-  create(createDocumentDto: CreateDocumentDto) {
+  create(createDocumentDto: CreateDocumentDto): Promise<Document> {
     return this.docsRepository.createDocument(createDocumentDto);
   }
 
@@ -19,15 +20,15 @@ export class DocumentsService {
     return this.docsRepository.getDocuments();
   }
 
-  findOne(type: string) {
+  findOne(type: string): Promise<[Document[], number]> {
     return this.docsRepository.getDocumentsByType(type);
   }
 
-  checkDocumentType(id: string) {
+  checkDocumentType(id: string): Promise<Document>{
     return this.docsRepository.getDocumentTypeById(id)
   }
 
-  findById(id: string) {
+  findById(id: string): Promise<Document> {
     return this.docsRepository.getDocumentById(id)
   }
 
@@ -35,7 +36,7 @@ export class DocumentsService {
     return this.docsRepository.updateDocument(id,_updateDocumentDto)
   }
 
-  remove(id: string) {
+  remove(id: string): Promise<DeleteResult> {
     return this.docsRepository.removeDocument(id)
   }
 }

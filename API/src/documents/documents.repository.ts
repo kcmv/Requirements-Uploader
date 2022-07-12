@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { isUUID } from "class-validator";
-import { EntityRepository, Repository } from "typeorm";
+import { DeleteResult, EntityRepository, Repository } from "typeorm";
 import { CreateDocumentDto } from "./dto/create-document.dto";
 import { UpdateDocumentDto } from "./dto/update-document.dto";
 import { Document } from "./entities/document.entity";
@@ -58,7 +58,7 @@ export class DocumentsRepository extends Repository<Document> {
     return docs;
   }
 
-  async getDocumentTypeById(id: string) {
+  async getDocumentTypeById(id: string): Promise<Document> {
     const document = await Document.findOne(id);
 
     if (!document) {
@@ -108,7 +108,7 @@ export class DocumentsRepository extends Repository<Document> {
    * @param id
    * @returns
    */
-  async removeDocument(id: string) {
+  async removeDocument(id: string): Promise<DeleteResult> {
     await this.getDocumentById(id);
 
     const result = await Document.delete(id);

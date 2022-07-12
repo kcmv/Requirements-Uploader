@@ -175,7 +175,7 @@ export class CMSUserRepository extends Repository<CmsUser> {
    * @param email
    * @returns token, profile(User)
    */
-  async Login(employee_id: string, email: string) {
+  async Login(employee_id: string, email: string): Promise<any> {
     const user_email = await CmsUser.findOne({
       where: [{ employee_id: employee_id }, { employee_id: email }],
     });
