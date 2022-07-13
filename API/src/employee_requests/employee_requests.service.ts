@@ -14,6 +14,7 @@ import {
 } from "./dto/create-employee_request.dto";
 import { EmployeeRequest } from "./entities/employee_request.entity";
 import { getLoginToken, getAveMonthlyBonus } from "src/services/onPremise";
+import { UpdateEmployeeRequestDto } from "./dto/update-employee_request.dto";
 
 @Injectable()
 export class EmployeeRequestsService {
