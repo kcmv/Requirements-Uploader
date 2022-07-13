@@ -69,3 +69,72 @@ export const checkIfBoosterOrderExists = (boosters: any, dose_number: any) => {
 
   return dd;
 };
+
+export const dateCompleted = () => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const today = new Date();
+  const month = months[today.getMonth()];
+  const date = today.getDate();
+  const year = today.getFullYear();
+  const hour = today.getHours();
+  const min = today.getMinutes();
+  const seconds = today.getSeconds();
+
+  return `${month} ${date}, ${year} ${hour}:${min}:${seconds}`;
+};
+
+export const getOnePurpose = (result: any, purpose: any) => {
+  let purpose_file: any = [];
+  result.map((item: any) => {
+    item.purposes.filter((p: any) => {
+      if (p.id === Number(purpose)) {
+        purpose_file.push(item);
+      }
+    });
+  });
+
+  return purpose_file;
+};
+
+export const filterAnswers = (result: any) => {
+  const filterResult = result.map((item: any) => {
+    const purpose_name = item.purposes[0].name;
+
+    const answers = item.answers.map((ans: any) => {
+      return {
+        [ans.purpose_field_type.field_type[0].name]: ans.answer,
+      };
+    });
+
+    delete item["answers"];
+    delete item["purposes"];
+
+    let obj: any = {};
+
+    answers.map((item: any) => {
+      obj[Object.keys(item)[0]] = Object.values(item)[0];
+    });
+
+    return {
+      ...item,
+      purpose: purpose_name,
+      ...obj,
+    };
+  });
+
+  return filterResult;
+};

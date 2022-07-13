@@ -24,7 +24,7 @@ handler.use(async (req, res, next) => {
 handler.get(async (_req, res, _next) => {
   try {
     const { data } = await axios({
-      url: `${process.env.COE_API}/purpose`,
+      url: `${process.env.API}/purpose`,
       method: "GET",
       headers: {
         Authorization: `Bearer ${process.env.AUTHORIZATION}`,

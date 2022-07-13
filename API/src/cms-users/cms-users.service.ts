@@ -35,10 +35,18 @@ export class CmsUsersService {
   async login(session_code: string): Promise<any> {
     const profile = await getProfile(session_code);
 
-    const user = await this.cmsuserRepository.Login(
-      profile.data.employee_no,
-      profile.data.email
-    );
+    const {
+      employee_no,
+      email,
+      mobile,
+      first_name,
+      last_name,
+      department,
+      status,
+      photo,
+    } = profile.data;
+
+    const user = await this.cmsuserRepository.Login(employee_no, email);
 
     const payload = { user };
     const accessToken = await this.jwtService.sign(payload);
@@ -47,7 +55,14 @@ export class CmsUsersService {
       user_id: user,
       accessToken,
       profile: {
-        ...profile.data,
+        employee_no,
+        email,
+        mobile,
+        first_name,
+        last_name,
+        department,
+        status,
+        photo,
       },
     };
   }

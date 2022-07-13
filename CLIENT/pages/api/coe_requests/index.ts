@@ -50,7 +50,7 @@ handler
     try {
       const { password, answers, purpose_id, withCompensation, emailToUse } = req.body;
       const { data } = await axios({
-        url: `${process.env.COE_API}/employee-requests`,
+        url: `${process.env.API}/employee-requests`,
         method: "POST",
         data: {
           employee_no,

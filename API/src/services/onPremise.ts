@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+const crypto = require('crypto')
 
 interface userLogin {
   email: string;
@@ -14,10 +15,10 @@ export const onPremiseLogin = async ({ email, password }: userLogin) => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
-    const profile = await result.json();
+    const user = await result.json();
 
     return {
-      profile,
+      user,
       status: result.status,
     };
   } catch (error: any) {
@@ -35,8 +36,73 @@ export const getProfile = async (session_code: string) => {
     });
 
     const data = await profile.json();
+   
     return data;
   } catch (error: any) {
     throw new Error(error);
   }
 };
+
+export const getLoginToken = async (employee_id: string, password: string) => {
+  const hash = crypto.createHash('sha1').update(password).digest('hex')
+
+  try {
+      const loginToken = await fetch(`${process.env.login_token_api}`, {
+          method: 'post',
+          body: `username=${employee_id}&password=${hash}&grant_type=password`,
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          },
+      })
+
+      const result = await loginToken.json()
+
+      const isResultHaveAnError = result.hasOwnProperty("error")
+
+      return {
+        success: isResultHaveAnError,
+        error: isResultHaveAnError ? result.error_description : '',
+        accessToken: result.access_token
+      }
+
+      // if (result.hasOwnProperty("error")) {
+      //     return {
+      //         success: false,
+      //         error: result.error_description
+      //     }
+      // } else {
+      //     return {
+      //         success: true,
+      //         accessToken: result.access_token
+      //     }
+      // }
+
+  } catch (error: any) {
+      throw new Error(error)
+  }
+}
+
+export const getAveMonthlyBonus = async (pass: string) => {
+  const today = new Date()
+  const month = today.getMonth()
+  const day = today.getDate()
+  const year = today.getFullYear()
+  const lastYr = year - 1
+
+  try {
+      const ave = await fetch(`${process.env.monthly_ave_bonus}`, {
+          method: 'post',
+          body: `DateFrom=${month}/${day}/${lastYr}&DateTo=${month}/${day}/${year}`,
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Bearer ${pass}`
+          },
+      })
+
+      const result = await ave.json()
+
+      return result[0].AvgBonus
+  } catch (error: any) {
+      throw new Error(error)
+  }
+}

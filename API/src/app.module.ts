@@ -8,6 +8,11 @@ import { DocumentHistoryModule } from "./document-history/document-history.modul
 import { VaccineModule } from "./vaccine/vaccine.module";
 import ConnectionOptions from "./config/typeorm.config";
 import { VaccinationModule } from "./vaccination/vaccination.module";
+import { FieldTypeModule } from "./field_type/field_type.module";
+import { PurposeFieldTypeModule } from "./purpose_field_type/purpose_field_type.module";
+import { PurposeModule } from "./purpose/purpose.module";
+import { EmployeeRequestsModule } from "./employee_requests/employee_requests.module";
+import { AnswersModule } from "./answers/answers.module";
 
 @Module({
   imports: [
@@ -22,6 +27,11 @@ import { VaccinationModule } from "./vaccination/vaccination.module";
     DocumentHistoryModule,
     VaccinationModule,
     VaccineModule,
+    FieldTypeModule,
+    PurposeFieldTypeModule,
+    PurposeModule,
+    EmployeeRequestsModule,
+    AnswersModule,
   ],
 })
 export class AppModule {}

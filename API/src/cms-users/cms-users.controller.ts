@@ -16,7 +16,14 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { RouteGuard } from "src/guards/auth.guard";
 import { onPremiseLogin } from "src/services/onPremise";
 import { CmsUsersService } from "./cms-users.service";
-import { CreateUsers, DeleteUserById, GetAllUsers, GetUserByEmail, UpdateUser, UserLogin } from "./decorator/cms-users.decorator";
+import {
+  CreateUsers,
+  DeleteUserById,
+  GetAllUsers,
+  GetUserByEmail,
+  UpdateUser,
+  UserLogin,
+} from "./decorator/cms-users.decorator";
 import { CreateCmsUserDto, UserLoginDto } from "./dto/create-cms-user.dto";
 import { UpdateCmsUserDto } from "./dto/update-cms-user.dto";
 import { CmsUser } from "./entities/cms-user.entity";
@@ -39,8 +46,11 @@ export class CmsUsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard())
   @GetAllUsers()
-  findAll(@Param("skip") skip: string, @Param("take") take: string):Promise<[CmsUser[], number]> {
-    return this.cmsUsersService.findAll(skip,take);
+  findAll(
+    @Param("skip") skip: string,
+    @Param("take") take: string
+  ): Promise<[CmsUser[], number]> {
+    return this.cmsUsersService.findAll(skip, take);
   }
 
   @Get(":email")
@@ -59,19 +69,16 @@ export class CmsUsersController {
   @UserLogin()
   async userLogin(@Body() userLoginDto: UserLoginDto): Promise<any> {
     const { email, password } = userLoginDto;
-    try {
-      const response: any = await onPremiseLogin({ email, password });
 
-      if (response.status === 401) {
-        throw new UnauthorizedException(
-          `${response.title} ${response.message}`
-        );
-      } else {
-        const { token } = response.profile.data;
-        return this.cmsUsersService.login(token);
-      }
-    } catch (error: any) {
-        throw new Error(error);
+    const response: any = await onPremiseLogin({ email, password });
+
+    if (response.status === 401) {
+      throw new UnauthorizedException(
+        `${response.user.title} ${response.user.message}`
+      );
+    } else {
+      const { token } = response.user.data;
+      return this.cmsUsersService.login(token);
     }
   }
 
@@ -80,7 +87,10 @@ export class CmsUsersController {
   @UseGuards(AuthGuard())
   @UsePipes(ValidationPipe)
   @UpdateUser()
-  update(@Param("id", ParseUUIDPipe) id: string, @Body() updateCmsUserDto: UpdateCmsUserDto): Promise<CmsUser> {
+  update(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() updateCmsUserDto: UpdateCmsUserDto
+  ): Promise<CmsUser> {
     return this.cmsUsersService.update(id, updateCmsUserDto);
   }
 
