@@ -10,6 +10,8 @@ import {
   ValidationPipe,
   Query,
   UseGuards,
+  ParseIntPipe,
+  ParseUUIDPipe,
 } from "@nestjs/common";
 import { EmployeeRequestsService } from "./employee_requests.service";
 import {
@@ -18,6 +20,7 @@ import {
 } from "./dto/create-employee_request.dto";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { RouteGuard } from "src/guards/auth.guard";
+import { EmployeeRequest } from "./entities/employee_request.entity";
 
 @ApiBearerAuth()
 @ApiTags("Employee Requests")
@@ -30,12 +33,12 @@ export class EmployeeRequestsController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  create(@Body() createEmployeeRequestDto: CreateEmployeeRequestDto) {
+  create(@Body() createEmployeeRequestDto: CreateEmployeeRequestDto): Promise<EmployeeRequest> {
     return this.employeeRequestsService.create(createEmployeeRequestDto);
   }
 
   @Get("/employee_purpose/:employee_no")
-  findAllUserPurpose(@Param("employee_no") eid: string) {
+  findAllUserPurpose(@Param("employee_no") eid: string): Promise<any> {
     return this.employeeRequestsService.findAllUserPurpose(eid);
   }
 
@@ -43,32 +46,32 @@ export class EmployeeRequestsController {
   findUserPurpose(
     @Query()
     query: FindUserPurposeDto
-  ) {
+  ): Promise<EmployeeRequest> {
     return this.employeeRequestsService.findUserPurpose(query);
   }
 
   @Get("/incomplete")
-  findAllIncomplete() {
-    return this.employeeRequestsService.findAllNotCompleted();
+  findAllIncomplete(): Promise<EmployeeRequest[]> {
+    return this.employeeRequestsService.findAllIncomplete();
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  findOne(@Param("id", ParseUUIDPipe) id: string): Promise<EmployeeRequest> {
     return this.employeeRequestsService.findOne(id);
   }
 
   @Get(":skip/:take")
-  findAll(@Param("skip") skip: string, @Param("take") take: string) {
+  findAll(@Param("skip", ParseIntPipe) skip: number, @Param("take", ParseIntPipe) take: number): Promise<any[]> {
     return this.employeeRequestsService.findAll(skip, take);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string) {
+  update(@Param("id", ParseUUIDPipe) id: string): Promise<EmployeeRequest> {
     return this.employeeRequestsService.update(id);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
+  remove(@Param("id", ParseUUIDPipe) id: string): Promise<void> {
     return this.employeeRequestsService.remove(id);
   }
 }

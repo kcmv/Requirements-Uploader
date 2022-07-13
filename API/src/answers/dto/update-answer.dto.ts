@@ -6,5 +6,5 @@ export class UpdateAnswerDto extends PartialType(CreateAnswerDto) {
     @ApiProperty()
     @IsUUID()
     @IsNotEmpty()
-    id: string;
+    id!: string;
 }

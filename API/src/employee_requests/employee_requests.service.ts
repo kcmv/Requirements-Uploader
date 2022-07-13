@@ -17,7 +17,14 @@ import { getLoginToken, getAveMonthlyBonus } from "src/services/onPremise";
 
 @Injectable()
 export class EmployeeRequestsService {
-  async create(createEmployeeRequestDto: CreateEmployeeRequestDto) {
+  /**
+   * @description create employee request
+   * @param createEmployeeRequestDto
+   * @returns
+   */
+  async create(
+    createEmployeeRequestDto: CreateEmployeeRequestDto
+  ): Promise<EmployeeRequest> {
     const {
       employee_no,
       email,
@@ -32,7 +39,7 @@ export class EmployeeRequestsService {
     let averageBonus;
 
     if (withCompensation) {
-      const { success, accessToken, error } = await getLoginToken(
+      const { success, accessToken } = await getLoginToken(
         employee_no,
         password
       );
@@ -46,10 +53,15 @@ export class EmployeeRequestsService {
         : 0;
     }
 
-    const isPurposeExists = await this.findUserPurpose({employee_no, purpose: purpose_id})
+    const isPurposeExists = await this.findUserPurpose({
+      employee_no,
+      purpose: purpose_id,
+    });
 
     if (isPurposeExists.length > 0 && !isPurposeExists[0].completed) {
-      throw new ConflictException(`Pending request exists. Please wait for the previous request to be completed.`)
+      throw new ConflictException(
+        `Pending request exists. Please wait for the previous request to be completed.`
+      );
     }
 
     // find purpose entity value
@@ -84,20 +96,21 @@ export class EmployeeRequestsService {
     employee_request.email = email;
     employee_request.purposes = [purpose];
     employee_request.answers = answer_list;
-    employee_request.emailToUse = emailToUse
+    employee_request.emailToUse = emailToUse;
     employee_request.aveMonthlyBonus = averageBonus;
     employee_request.completed = completed;
 
     await employee_request.save();
 
-    return {
-      status: 201,
-      message: "Successfully create employee request",
-      employee_request,
-    };
+    return employee_request;
   }
 
-  async findUserPurpose(finduserPurpose: FindUserPurposeDto) {
+  /**
+   * @description find user purpose
+   * @param finduserPurpose
+   * @returns
+   */
+  async findUserPurpose(finduserPurpose: FindUserPurposeDto): Promise<any> {
     const { employee_no, purpose } = finduserPurpose;
     try {
       const result = await EmployeeRequest.find({
@@ -107,32 +120,38 @@ export class EmployeeRequestsService {
         relations: ["purposes"],
       });
 
-      const isPurposeExists = getOnePurpose(result, purpose)
+      const isPurposeExists = getOnePurpose(result, purpose);
 
       return isPurposeExists;
-
     } catch (error: any) {
       throw new Error(error);
     }
   }
 
-  async findAll(skip: string, take: string) {
+  /**
+   * @description get all employee request
+   * @param skip
+   * @param take
+   * @returns
+   */
+  async findAll(skip: number, take: number): Promise<any[]> {
     const result = await EmployeeRequest.findAndCount({
-      skip: parseInt(take) * (parseInt(skip) - 1),
-      take: parseInt(take),
+      skip: take * (skip - 1),
+      take,
       relations: ["purposes"],
     });
 
     const filterResult = filterAnswers(result[0]);
 
-    return {
-      status: 206,
-      message: "Successfully fetched all employee requests",
-      result: filterResult,
-    };
+    return filterResult;
+    
   }
 
-  async findAllNotCompleted() {
+  /**
+   * @description get all incomplete
+   * @returns
+   */
+  async findAllIncomplete(): Promise<EmployeeRequest[]> {
     const result = await EmployeeRequest.find({
       where: {
         completed: false,
@@ -143,15 +162,15 @@ export class EmployeeRequestsService {
 
     const filterResult = filterAnswers(result);
 
-    return {
-      status: 200,
-      message: "Successfully fetched all incomplete employee requests",
-      result: filterResult,
-      // result
-    };
+    return filterResult;
   }
 
-  async findAllUserPurpose(employee_no: string) {
+  /**
+   * @description get all user purpose
+   * @param employee_no
+   * @returns
+   */
+  async findAllUserPurpose(employee_no: string): Promise<EmployeeRequest> {
     const result = await EmployeeRequest.find({
       where: {
         employee_no,
@@ -163,42 +182,48 @@ export class EmployeeRequestsService {
     return filterResult;
   }
 
-  async findOne(id: string) {
-    try {
-      const result = await EmployeeRequest.findOne(id);
+  /**
+   * @description find one
+   * @param id
+   * @returns
+   */
+ 
+  async findOne(id: string): Promise<EmployeeRequest> {
+    const result = await EmployeeRequest.findOne(id);
 
-      return {
-        status: 200,
-        message: `Successfully fetched user ${id}`,
-        result,
-      };
-    } catch (error: any) {
-      throw new NotFoundException({
-        status: 404,
-        message: `Invalid ID. ${id} not found.`,
-        serverMessage: error.message,
-      });
+    if (!result) {
+      throw new NotFoundException(`Employee request id ${id} not found.`)
     }
+
+    return result
   }
 
-  async update(id: string) {
+  /**
+   * @description update one
+   * @param id
+   * @returns
+   */
+  async update(id: string): Promise<EmployeeRequest> {
     const employee_request: any = await this.findOne(id);
 
     (employee_request.result.completed = true),
       (employee_request.result.completedDateTime = dateCompleted());
 
-    await employee_request?.result.save();
+    await employee_request.result.save();
 
-    return {
-      status: 204,
-      message: `Successfully update user ${id}`,
-      result: employee_request.result,
-    };
+    return employee_request.result;
   }
 
-  remove(id: string) {
-    return EmployeeRequest.delete(id)
-      .then((res) => res)
-      .catch((err) => err);
+  /**
+   * @description remove by id
+   * @param id
+   * @returns
+   */
+  async remove(id: string): Promise<void> {
+    const employee_request = await EmployeeRequest.delete(id);
+
+    if (employee_request.affected === 0) {
+      throw new NotFoundException(`Employee request id ${id} not found.`);
+    }
   }
 }
