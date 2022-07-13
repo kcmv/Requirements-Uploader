@@ -49,7 +49,7 @@ export class PurposeFieldTypeService {
     const result = await PurposeFieldType.findOne(id);
 
     if (!result) {
-      throw new NotFoundException("not found");
+      throw new NotFoundException(`Purpose field type id ${id} not found.`);
     }
     return {
       status: 200,

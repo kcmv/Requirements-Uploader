@@ -7,5 +7,6 @@ import { JwtStrategy } from "src/employee_requests/jwt.strategy";
   imports: [PassportModule.register({ defaultStrategy: "jwt" })],
   controllers: [PurposeFieldTypeController],
   providers: [PurposeFieldTypeService, JwtStrategy],
+  exports: [PurposeFieldTypeService]
 })
 export class PurposeFieldTypeModule {}

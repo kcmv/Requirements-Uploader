@@ -32,7 +32,7 @@ export class EmployeeRequestsService {
     let averageBonus;
 
     if (withCompensation) {
-      const { success, accessToken } = await getLoginToken(
+      const { success, accessToken, error } = await getLoginToken(
         employee_no,
         password
       );
